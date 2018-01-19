@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="ElasticLayout">
+        <attr name="el_factor" format="float" />
+        <attr name="el_direction">
+            <enum name="none" value="0" />
+            <enum name="top" value="1" />
+        </attr>
+        <attr name="el_behind_view" format="reference" />
+    </declare-styleable>
+</resources>

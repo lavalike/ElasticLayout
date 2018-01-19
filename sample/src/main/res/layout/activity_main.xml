@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.wangzhen.elastic.ElasticLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/pull_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:el_behind_view="@layout/layout_pull_behind"
+    app:el_direction="top"
+    app:el_factor="0.3">
+
+    <WebView
+        android:id="@+id/webview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+</com.wangzhen.elastic.ElasticLayout>
