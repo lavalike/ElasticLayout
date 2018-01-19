@@ -12,7 +12,7 @@ import com.wangzhen.elastic.ElasticLayout;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-public class MainActivity extends AppCompatActivity {
+public class ElasticDemoActivity extends AppCompatActivity {
 
     private ElasticLayout elasticLayout;
     private WebView webView;
