@@ -19,6 +19,9 @@ android {
     }
     productFlavors {
     }
+    lintOptions {
+        abortOnError false
+    }
 }
 
 def SUPPORT_VERSION = "25.3.1"
