@@ -1,6 +1,7 @@
 package com.wangzhen.elastic;
 
 import android.animation.ValueAnimator;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Rect;
@@ -8,6 +9,7 @@ import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 /**
@@ -41,7 +43,8 @@ public class ElasticLayout extends FrameLayout {
             behindView = LayoutInflater.from(context).inflate(resourceId, null);
         }
         if (behindView != null) {
-            addView(behindView, 0);
+            ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            addView(behindView, 0, layoutParams);
         }
     }
 
@@ -61,6 +64,7 @@ public class ElasticLayout extends FrameLayout {
             originalRect.set(contentView.getLeft(), contentView.getTop(), contentView.getRight(), contentView.getBottom());
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         return true;
@@ -180,13 +184,5 @@ public class ElasticLayout extends FrameLayout {
      */
     public View getBehindView() {
         return behindView;
-    }
-
-    /**
-     * 拖动方向
-     */
-    public static class PullDirection {
-        static int DIRECTION_NONE = 0;
-        static int DIRECTION_TOP = 1;
     }
 }
