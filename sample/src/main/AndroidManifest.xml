@@ -3,6 +3,7 @@
     package="com.wangzhen.demo">
 
     <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -10,7 +11,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name="com.wangzhen.demo.MainActivity">
+        <activity android:name=".RecyclerActivity"></activity>
+        <activity android:name=".ScrollActivity" />
+        <activity android:name=".WebActivity" />
+        <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

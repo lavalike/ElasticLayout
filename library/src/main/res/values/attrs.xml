@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="ElasticLayout">
-        <attr name="el_factor" format="float" />
-        <attr name="el_direction">
-            <enum name="none" value="0" />
-            <enum name="top" value="1" />
-        </attr>
-        <attr name="el_behind_view" format="reference" />
+        <attr name="drag_factor" format="float" />
+        <attr name="drag_enable" format="boolean" />
     </declare-styleable>
 </resources>

@@ -1,188 +1,195 @@
 package com.wangzhen.elastic;
 
 import android.animation.ValueAnimator;
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.graphics.Rect;
+import android.support.annotation.Nullable;
+import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
-import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 
 /**
- * 弹性布局
+ * 可自定义Header的弹性布局
  * Created by wangzhen on 2018/1/18.
  */
-public class ElasticLayout extends FrameLayout {
-    private View contentView;
-    private float startY;
-    private boolean isMoved;
-    private Rect originalRect = new Rect();
-    private float factor = 0.3f;
-    private int pullDirection = PullDirection.DIRECTION_NONE;
-    private View behindView;
-    private boolean isCanPullDown;
-    //上一次Y距离
-    private int lastDeltaY;
+public class ElasticLayout extends LinearLayout {
+    //默认拖动因子
+    private static final float DEFAULT_DRAG_FACTOR = 0.3f;
+    private float mDragFactor;
+    //是否正在拖动
+    private boolean isDragging = false;
+    private boolean isEnable;
+    //HeaderView
+    private View mHeaderView;
+    //ContentView
+    private View mContentView;
+    private float lastX;
+    private float lastY;
 
     public ElasticLayout(Context context) {
-        super(context);
+        this(context, null);
     }
 
-    public ElasticLayout(Context context, AttributeSet attrs) {
-        super(context, attrs);
+    public ElasticLayout(Context context, @Nullable AttributeSet attrs) {
+        this(context, attrs, 0);
+    }
+
+    public ElasticLayout(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
         TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.ElasticLayout);
-        factor = typedArray.getFloat(R.styleable.ElasticLayout_el_factor, 0.3f);
-        pullDirection = typedArray.getInt(R.styleable.ElasticLayout_el_direction, PullDirection.DIRECTION_NONE);
-        int resourceId = typedArray.getResourceId(R.styleable.ElasticLayout_el_behind_view, -1);
+        mDragFactor = validateFactor(typedArray.getFloat(R.styleable.ElasticLayout_drag_factor, DEFAULT_DRAG_FACTOR));
+        isEnable = typedArray.getBoolean(R.styleable.ElasticLayout_drag_enable, true);
         typedArray.recycle();
-        if (resourceId > -1) {
-            behindView = LayoutInflater.from(context).inflate(resourceId, null);
+        init();
+    }
+
+    private void init() {
+        isDragging = false;
+        setOrientation(VERTICAL);
+        createDefaultHeader();
+    }
+
+    /**
+     * 添加默认透明HeaderView
+     */
+    private void createDefaultHeader() {
+        mHeaderView = new FrameLayout(getContext());
+        addView(mHeaderView, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0));
+    }
+
+    /**
+     * 设置HeaderView
+     *
+     * @param header HeaderView
+     */
+    public void setHeaderView(View header) {
+        if (header != null) {
+            this.mHeaderView = header;
+            removeViewAt(0);
+            addView(mHeaderView, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0));
         }
-        if (behindView != null) {
-            ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-            addView(behindView, 0, layoutParams);
+    }
+
+    /**
+     * 设置拖动因子 0~1
+     *
+     * @param factor factor
+     */
+    public void setDragFactor(float factor) {
+        this.mDragFactor = validateFactor(factor);
+    }
+
+    /**
+     * 校验DragFactor的合法性
+     *
+     * @param factor 拖拽因子
+     * @return factor
+     */
+    private float validateFactor(float factor) {
+        if (factor < 0) {
+            factor = DEFAULT_DRAG_FACTOR;
         }
+        if (factor > 1) {
+            factor = 1;
+        }
+        return factor;
     }
 
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
         if (getChildCount() > 0) {
-            contentView = getChildAt(getChildCount() - 1);
+            mContentView = getChildAt(getChildCount() - 1);
+            if (mContentView != null) {
+                mContentView.setOverScrollMode(View.OVER_SCROLL_NEVER);
+            }
         }
     }
 
     @Override
-    protected void onLayout(boolean changed, int l, int t, int r, int b) {
-        super.onLayout(changed, l, t, r, b);
-        //存储子控件位置信息
-        if (contentView != null)
-            originalRect.set(contentView.getLeft(), contentView.getTop(), contentView.getRight(), contentView.getBottom());
-    }
-
-    @SuppressLint("ClickableViewAccessibility")
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        return true;
-    }
-
-    @Override
-    public boolean dispatchTouchEvent(MotionEvent ev) {
-        if (contentView == null) {
-            return super.dispatchTouchEvent(ev);
-        }
+    public boolean onInterceptTouchEvent(MotionEvent ev) {
+        if (!isEnable)
+            return super.onInterceptTouchEvent(ev);
         switch (ev.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                isCanPullDown = isCanPullDown();
-                startY = ev.getY();
+                lastX = ev.getX();
+                lastY = ev.getY();
                 break;
             case MotionEvent.ACTION_MOVE:
-                if (!isCanPullDown) break;
-                int deltaY = (int) (ev.getY() - startY);
-                dragMove(deltaY);
+                //存在情况：mContentView内容未在顶部，下拉到顶部时mContentView会直接跳过前面下拉距离
+                //解决方法：下拉过程中不断更新lastX、lastY坐标为当前坐标，达到从顶部下拉的效果
+                if (isCanPullDown()) {
+                    lastX = ev.getX();
+                    lastY = ev.getY();
+                }
+                float diffX = ev.getX() - lastX;
+                float diffY = ev.getY() - lastY;
+                if (diffY > 0 && diffY > Math.abs(diffX)) {
+                    isDragging = true;
+                    return true;
+                }
+                break;
+        }
+        return super.onInterceptTouchEvent(ev);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_MOVE:
+                if (isDragging) {
+                    float deltaY = event.getY() - lastY;
+                    changeHeader(deltaY);
+                }
                 break;
             case MotionEvent.ACTION_UP:
-                if (!isMoved) break;
-                collapse();
+            case MotionEvent.ACTION_CANCEL:
+                if (isDragging) {
+                    isDragging = false;
+                    restoreHeader();
+                }
                 break;
-            default:
-                break;
         }
-        return super.dispatchTouchEvent(ev);
+        return super.onTouchEvent(event);
     }
 
     /**
-     * 判断拖动类型
-     *
-     * @param deltaY Y方向移动距离
+     * 将HeaderView高度恢复为0
      */
-    private void dragMove(int deltaY) {
-        if (pullDirection == PullDirection.DIRECTION_TOP) {
-            if (isCanPullDown && deltaY > 0) {
-                int offset = (int) (deltaY * factor);
-                contentView.layout(
-                        originalRect.left,
-                        originalRect.top + offset,
-                        originalRect.right,
-                        originalRect.bottom + offset
-                );
-                //如何滚动过程中往回滚动，则禁用内容滚动
-                if (lastDeltaY >= deltaY)
-                    disableContentScroll();
-                lastDeltaY = deltaY;
-                isMoved = true;
-            }
-        }
-    }
-
-    private void disableContentScroll() {
-        contentView.setOnTouchListener(disableScrollListener);
-    }
-
-    private void enableContentScroll() {
-        contentView.setOnTouchListener(enableScrollListener);
-    }
-
-    /**
-     * 禁用View内容滚动
-     */
-    OnTouchListener disableScrollListener = new OnTouchListener() {
-        @Override
-        public boolean onTouch(View v, MotionEvent event) {
-            return true;
-        }
-    };
-
-    /**
-     * 启用View内容滚动
-     */
-    OnTouchListener enableScrollListener = new OnTouchListener() {
-        @Override
-        public boolean onTouch(View v, MotionEvent event) {
-            return false;
-        }
-    };
-
-    /**
-     * 闭合动画
-     */
-    private void collapse() {
-        ValueAnimator animator = ValueAnimator.ofInt(contentView.getTop(), originalRect.top);
-        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+    private void restoreHeader() {
+        ValueAnimator valueAnimator = ValueAnimator.ofInt(mHeaderView.getBottom(), 0);
+        valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                int value = (int) animation.getAnimatedValue();
-                contentView.layout(
-                        originalRect.left,
-                        value,
-                        originalRect.right,
-                        originalRect.bottom + value
-                );
+                ViewGroup.LayoutParams layoutParams = mHeaderView.getLayoutParams();
+                layoutParams.height = (int) animation.getAnimatedValue();
+                mHeaderView.requestLayout();
             }
         });
-        animator.start();
-        enableContentScroll();
-        isMoved = false;
+        valueAnimator.start();
+    }
+
+    /**
+     * 改变HeaderView的高度
+     *
+     * @param height 高度
+     */
+    private void changeHeader(float height) {
+        if (height < 0)
+            height = 0;
+        ViewGroup.LayoutParams layoutParams = mHeaderView.getLayoutParams();
+        layoutParams.height = (int) (height * mDragFactor);
+        mHeaderView.requestLayout();
     }
 
     /**
      * 判断是否滚动到顶部
      */
     private boolean isCanPullDown() {
-        return contentView.getScrollY() == 0 ||
-                contentView.getHeight() < getHeight() + getScrollY();
-    }
-
-    /**
-     * 获取背景View
-     *
-     * @return 背景View
-     */
-    public View getBehindView() {
-        return behindView;
+        return mContentView != null && ViewCompat.canScrollVertically(mContentView, -1);
     }
 }
