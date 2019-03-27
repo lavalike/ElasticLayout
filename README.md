@@ -1,14 +1,18 @@
 # ElasticLayout
 > 可自定义Header的弹性布局
 
-###属性说明
+```gradle
+implementation 'com.wangzhen:ElasticLayout:0.0.3'
+```
+
+### 属性说明
 **drag_factor**
 > 0~1的值，控制滚动灵敏度，默认0.3
 
 **drag_enable**
 > 是否启用弹性下拉，默认true
 
-###布局
+### 布局
 ``` xml
 <?xml version="1.0" encoding="utf-8"?>
 <com.wangzhen.elastic.ElasticLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -29,7 +33,7 @@
 
 ```
 
-###代码使用
+### 代码使用
 ```java
 View headerView = getLayoutInflater().inflate(R.layout.xxx, null);
 ((TextView) headerView.findViewById(R.id.xxx)).setText("网页由 " + getUrlHost(url) + " 提供");

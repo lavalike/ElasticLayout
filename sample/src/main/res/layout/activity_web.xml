@@ -5,8 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    app:drag_enable="true"
-    app:drag_factor="0.3">
+    app:drag_enable="true">
 
     <WebView
         android:id="@+id/webview"

@@ -16,6 +16,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
         findViewById(R.id.btn_web).setOnClickListener(this);
         findViewById(R.id.btn_scroll).setOnClickListener(this);
+        findViewById(R.id.btn_list).setOnClickListener(this);
         findViewById(R.id.btn_recycler).setOnClickListener(this);
     }
 
@@ -27,6 +28,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.btn_scroll:
                 startActivity(new Intent(this, ScrollActivity.class));
+                break;
+            case R.id.btn_list:
+                startActivity(new Intent(this, ListActivity.class));
                 break;
             case R.id.btn_recycler:
                 startActivity(new Intent(this, RecyclerActivity.class));
