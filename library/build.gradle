@@ -29,7 +29,7 @@ dependencies {
 publish {
     userOrg = 'lavalike'//bintray.com用户名
     groupId = 'com.wangzhen'//jcenter上的路径
-    artifactId = 'elastic-layout'//项目名称
+    artifactId = 'ElasticLayout'//项目名称
     publishVersion = '0.0.3'
     desc = '可自定义Header的弹性布局'
     website = 'https://github.com/lavalike/ElasticLayout'
