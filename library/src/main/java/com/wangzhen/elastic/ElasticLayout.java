@@ -21,8 +21,6 @@ public class ElasticLayout extends LinearLayout {
     //默认拖动因子
     private static final float DEFAULT_DRAG_FACTOR = 0.3f;
     private float mDragFactor;
-    //是否正在拖动
-    private boolean isDragging = false;
     private boolean isEnable;
     //HeaderView
     private View mHeaderView;
@@ -49,7 +47,6 @@ public class ElasticLayout extends LinearLayout {
     }
 
     private void init() {
-        isDragging = false;
         setOrientation(VERTICAL);
         createDefaultHeader();
     }
@@ -130,7 +127,6 @@ public class ElasticLayout extends LinearLayout {
                 float diffX = ev.getX() - lastX;
                 float diffY = ev.getY() - lastY;
                 if (diffY > 0 && diffY > Math.abs(diffX)) {
-                    isDragging = true;
                     return true;
                 }
                 break;
@@ -161,17 +157,12 @@ public class ElasticLayout extends LinearLayout {
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_MOVE:
-                if (isDragging) {
-                    float deltaY = event.getY() - lastY;
-                    changeHeader(deltaY);
-                }
+                float deltaY = event.getY() - lastY;
+                changeHeader(deltaY);
                 break;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
-                if (isDragging) {
-                    isDragging = false;
-                    restoreHeader();
-                }
+                restoreHeader();
                 break;
         }
         return super.onTouchEvent(event);
