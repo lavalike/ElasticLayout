@@ -3,8 +3,6 @@ package com.wangzhen.elastic;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.support.annotation.Nullable;
-import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -12,6 +10,9 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+
+import androidx.annotation.Nullable;
+import androidx.core.view.ViewCompat;
 
 /**
  * 可自定义Header的弹性布局
